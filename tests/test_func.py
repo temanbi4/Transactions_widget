@@ -107,3 +107,8 @@ def test_get_message():
 
     assert get_message(operation_1) == "05.11.2019 Открытие вклада\nСчёт отправителя неизвестен -> Счет **8381\n21344.35 руб. \n"
     assert get_message(operation_2) == "19.11.2019 Перевод организации\nMaestro 7810 84** **** 5568 -> Счет **2869\n30153.72 руб. \n"
+
+
+def test_main():
+    with pytest.raises(FileNotFoundError):
+        get_input_data('../error_operations.json')
