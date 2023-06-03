@@ -104,7 +104,7 @@ def get_message(operation):
 
     first_line_list = [date, description]
     second_line_list = [from_account, '->', to_account]
-    third_line_list = [amount, currency, '\n']
+    third_line_list = [amount, currency,'\n']
 
     first_line = ' '.join(first_line_list)
     second_line = ' '.join(second_line_list)
