@@ -1,7 +1,7 @@
 import json
 
 
-def get_input_data(file_name: str):
+def get_input_data(file_name):
     """
     :param file_name: Название json-файла с исходными данными
     :return: данные json-файла в виде списка словарей
@@ -10,10 +10,9 @@ def get_input_data(file_name: str):
         input_data = json.load(f)
     return input_data
 
-
-def get_executed_operations(operation_list: list):
+def get_executed_operations(operation_list):
     """
-    Функция игнорирует операции статус перевода которых неизвестен
+    Функция определяет статуст перевода
     :param operation_list: Список со словарями с данными по операциям
     :return: Список из 5 успешных операций
     """
@@ -21,63 +20,38 @@ def get_executed_operations(operation_list: list):
     for operation in operation_list:
         if 'state' in operation.keys():
             if operation['state'] == 'EXECUTED':
-                executed_operations.append(operation)
-        else:
-            continue
-    return executed_operations[0:5]
+                date = operation.get('date')
+                formatted_date = date[:10]
+                executed_operations.append((formatted_date, operation))
+            else:
+                continue
 
+    sorted_operations = sorted(executed_operations, key=lambda x: x[0], reverse=True)
+    last_five_operations = [operation[1] for operation in sorted_operations[:5]]
+    print(last_five_operations)
+    return last_five_operations
 
-def format_from_account(input_from_account: str):
-    """
-    Форматирует номер счета отправителя, приводя его к виду, в котором часть номера срыта
-    :param input_from_account: Строка с номером счета отправителя
-    :return: Строка с отформатированным номером счета отправителя
-    """
+def format_from_account(input_from_account):
+    '''
+    Функция скрывает номер карты отправителя
+    :param input_from_account: Номер счёта отправителя
+    :return: Скрытый счёт отправителя
+    '''
     from_account_split = input_from_account.split(" ")
+    new_str = ' ' + from_account_split [-1][0:4] + ' ' + from_account_split [-1][4:6] + '** ' + '**** ' + from_account_split [-1][12:16]
+    return from_account_split[0] + new_str
 
-    account_list = []
-    for i in from_account_split[1]:
-        account_list.append(i)
-
-    for i in range(6, 12):
-        account_list[i] = "*"
-
-    counter = 0
-    new_account = []
-
-    for num in account_list:
-        new_account.append(num)
-        counter += 1
-        if counter == 4:
-            new_account.append(' ')
-            counter = 0
-
-    del new_account[len(new_account) - 1]
-    from_account = ''.join(new_account)
-    from_account_split[1] = from_account
-
-    return " ".join(from_account_split)
-
-
-def format_to_account(input_to_account: str):
+def format_to_account(input_to_account):
     """
-    Форматирует номер счета получателя, приводя его к виду, в котором часть номера срыта
-    :param input_to_account: Строка с номером счета получателя
-    :return: Строка с отформатированным номером счета получателя
+    Функция скрывает номер карты получателя
+    :param input_to_account: Номер счёта получателя
+    :return: Скрытый счёт получателя
     """
     to_account_split = input_to_account.split(" ")
-    to_account_list = []
-    for i in to_account_split[1]:
-        to_account_list.append(i)
+    new_str = ' **' + to_account_split[1][16:20]
+    return to_account_split[0] + new_str
 
-    for num in range(0, 16):
-        to_account_list[num] = "*"
-    to_account_split[1] = "".join(to_account_list)[-6:]
-
-    return " ".join(to_account_split)
-
-
-def format_date(input_date: str):
+def format_date(input_date):
     """
     Форматирует дату и время операции оставляя только дату в нужном формате
     :param input_date: Строка с данными о дате и времени операции
@@ -86,17 +60,16 @@ def format_date(input_date: str):
     date_list = input_date[0:10].split('-')
     return '.'.join(date_list[::-1])
 
-
-def get_message(operation: dict):
-    """
-    По полученным данным из словаря генерирует сообщение пользователю
-    :param operation: Словарь с данными по операции
-    :return: Сообщение об операции
-    """
+def get_message(operation):
+    '''
+    Функция создаст структуру выводящего сообщения
+    :param operation: Работаем со словарём файла operations.json
+    :return: Готовое сообщение с данными
+    '''
     date = format_date(operation['date'])
     description = operation['description']
     if 'from' not in operation.keys():
-        from_account = 'Счет отправителя неизвестен'
+        from_account = 'Счёт отправителя неизвестен'
     else:
         from_account = format_from_account(operation['from'])
     to_account = format_to_account(operation['to'])
